@@ -1,9 +1,9 @@
 ###############################################################################
-# WidgetCommandEntry.py
+# WidgetFrequencyEntry.py
 # Author: Tom Kerr AB3GY
 #
-# WidgetCommandEntry class for use with the pyRigPreset application.
-# Provides a UI widget to enter a transceiver command.
+# WidgetFrequencyEntry class for use with the pyRigPreset application.
+# Provides a UI widget to enter the VFO frequency.
 #
 # Designed for personal use by the author, but available to anyone under the
 # license terms below.
@@ -50,7 +50,7 @@ from tkinter import ttk
 
 # Local packages.
 import globals
-from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
+from src.RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
 
 ##############################################################################
@@ -64,12 +64,12 @@ from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
     
 ##############################################################################
-# WidgetCommandEntry class.
+# WidgetFrequencyEntry class.
 ##############################################################################
-class WidgetCommandEntry(object):
+class WidgetFrequencyEntry(object):
     """
-    WidgetCommandEntry class for use with the pyRigPreset application.
-    Provides a UI widget to enter a transceiver command.
+    WidgetFrequencyEntry class for use with the pyRigPreset application.
+    Provides a UI widget to enter the VFO frequency.
     """
     # ------------------------------------------------------------------------
     def __init__(self, parent):
@@ -91,8 +91,7 @@ class WidgetCommandEntry(object):
             highlightthickness=1,
             padx=3,
             pady=3,)
-        self.tb_cmd = None # The command text box
-        self.command_text = tk.StringVar(self.frame)
+        self.freq_mhz_text = tk.StringVar(self.frame)
 
         self.PADX = 3
         self.PADY = 3
@@ -104,8 +103,9 @@ class WidgetCommandEntry(object):
         """
         Internal method to create and initialize the UI widget.
         """
+        validateFloatCommand = self.frame.register(self._validate_float)
         lbl = tk.Label(self.frame, 
-            text='Command:',
+            text='VFO-A frequency (MHz):',
             font=tkFont.Font(size=10))
         lbl.grid(
             row=0, 
@@ -113,35 +113,70 @@ class WidgetCommandEntry(object):
             sticky='E',
             padx=self.PADX,
             pady=self.PADY)
-        self.tb_cmd = tk.Entry(self.frame,
-            width=20,
-            textvariable=self.command_text,
+        tb = tk.Entry(self.frame,
+            width=12,
+            textvariable=self.freq_mhz_text,
             validate='key', 
+            validatecommand=(validateFloatCommand, '%d', '%i', '%S', '%P'),
             font=tkFont.Font(size=10))
-        self.tb_cmd.grid(
+        tb.grid(
             row=0, 
             column=1,
             sticky='W',
             padx=self.PADX,
             pady=self.PADY)
-        self.tb_cmd.bind('<Return>', self._send_command)
+        tb.bind('<Return>', self._set_frequency)
 
     # ------------------------------------------------------------------------
-    def _send_command(self, event):
+    def _set_frequency(self, event):
         """
         Event handler used to set the transceiver VFO-A frequency.
         """
         #print(event)
-        cmd = self.command_text.get().strip()
-        if init_rig_cat():
-            resp = send_rig_cat_cmd(cmd)
-        close_rig_cat()
-        self.tb_cmd.delete(0, tk.END)
+        freq_str = self.freq_mhz_text.get().strip()
+        if (len(freq_str) > 0):
+            freq_hz = int(float(freq_str) * 1E6)
+            if init_rig_cat():
+                cmd = 'FREQA {}'.format(freq_hz)
+                resp = send_rig_cat_cmd(cmd)
+            close_rig_cat()
+
+    # ------------------------------------------------------------------------
+    def _validate_float(self, why, where, what, all):
+        """
+        Validate a floating point number entry.
+
+        Parameters
+        ----------
+            why : int
+                Action code: 0 for an attempted deletion, 1 for an attempted 
+                insertion, or -1 for everything else.
+            where : int
+                Index of the beginning of the insertion or deletion.
+            what : str
+                The text being inserted or deleted.
+            all : str
+                The value that the text will have if the change is allowed. 
+        Returns
+        -------
+            status : bool
+                True if the character string is allowable, False otherwise.
+                The text entry box will accept the character if True, or reject it if False.
+        """
+        #print(str(why), str(where), str(what), str(all))
+        idx = int(where)
+        if (why != '1'): return True         # 1 = insertion
+        if (len(all) > 10): return False     # Limit entry length
+        if what.isnumeric(): return True
+        if (what == '.'):
+            if '.' in all[:idx]: return False # Only one occurrence allowed
+            else: return True
+        return False  # Nothing else allowed
 
 
 ##############################################################################
 # Main program.
 ############################################################################## 
 if __name__ == "__main__":
-    print('WidgetCommandEntry test application not implemented.')
+    print('WidgetFrequencyEntry test application not implemented.')
    

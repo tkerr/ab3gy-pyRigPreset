@@ -50,7 +50,7 @@ from tkinter import ttk
 
 # Local packages.
 import globals
-from pyRigPresetUtils import set_geometry
+from src.pyRigPresetUtils import set_geometry
 
 
 ##############################################################################

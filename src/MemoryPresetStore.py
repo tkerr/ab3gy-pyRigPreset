@@ -48,8 +48,8 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import *
-from ConfigFile import ConfigFile
+from src.pyRigPresetUtils import *
+from src.ConfigFile import ConfigFile
 from PyRigCat.PyRigCat import OperatingMode
 
 

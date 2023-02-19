@@ -49,19 +49,20 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import app_close, set_geometry
-from AppMenu import AppMenu
-from ConfigFile import ConfigFile
+from src.pyRigPresetUtils import app_close, set_geometry
+from src.AppMenu import AppMenu
+from src.ConfigFile import ConfigFile
+from src.WidgetCatPreset import WidgetCatPreset
+from src.WidgetCommandEntry import WidgetCommandEntry
+from src.WidgetConfigPreset import WidgetConfigPreset
+from src.WidgetMemoryPreset import WidgetMemoryPreset
+from src.WidgetFrequencyEntry import WidgetFrequencyEntry
+from src.WidgetTxRx import WidgetTxRx
+
 from PyRigCat import *
 from PyRigCat.PyRigCat_ft817 import PyRigCat_ft817
 from PyRigCat.PyRigCat_ft991 import PyRigCat_ft991
 from PyRigCat.PyRigCat_ic7000 import PyRigCat_ic7000
-from WidgetCatPreset import WidgetCatPreset
-from WidgetCommandEntry import WidgetCommandEntry
-from WidgetConfigPreset import WidgetConfigPreset
-from WidgetMemoryPreset import WidgetMemoryPreset
-from WidgetFrequencyEntry import WidgetFrequencyEntry
-from WidgetTxRx import WidgetTxRx
 
 
 ##############################################################################

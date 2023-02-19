@@ -53,9 +53,9 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import *
+from src.pyRigPresetUtils import *
+from src.ConfigPresetStore import ConfigPresetStore
 from PyRigCat.PyRigCat import OperatingMode
-from ConfigPresetStore import ConfigPresetStore
 
 ##############################################################################
 # Globals.
