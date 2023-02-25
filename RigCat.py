@@ -135,7 +135,7 @@ def send_rig_cat_cmd(cmd_str):
         if (len(cmd_list) < 2): 
             cmd_list.append('')
         resp = globals.rig_cat.ascii_cmd(cmd_list[0], cmd_list[1:])
-        print('Command: "{}" Response: "{}"'.format(cmd, resp))
+        print('Command: "{}" Response: "{}"'.format(cmd_list, resp))
     else:
         resp = globals.rig_cat.ERROR
     #print('RigCat send_cmd exit', flush=True)
