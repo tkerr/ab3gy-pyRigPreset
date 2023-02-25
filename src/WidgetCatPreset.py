@@ -1,10 +1,10 @@
 ###############################################################################
-# WidgetConfigPreset.py
+# WidgetCatPreset.py
 # Author: Tom Kerr AB3GY
 #
-# WidgetConfigPreset class for use with the pyRigPreset application.
-# Provides a UI widget to display and select a transceiver configuration
-# preset consisting of a series of CAT commands.
+# WidgetCatPreset class for use with the pyRigPreset application.
+# Provides a UI widget to display and select a transceiver CAT interface
+# configuration.
 #
 # Designed for personal use by the author, but available to anyone under the
 # license terms below.
@@ -49,11 +49,13 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
 
+# Local environment init.
+import _env_init
+
 # Local packages.
 import globals
-from DlgConfigPreset import DlgConfigPreset
-from ConfigPresetStore import ConfigPresetStore
-from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
+from src.DlgConfigCat import DlgConfigCat
+from src.CatPresetStore import CatPresetStore
 
 
 ##############################################################################
@@ -67,16 +69,16 @@ from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
     
 ##############################################################################
-# WidgetConfigPreset class.
+# WidgetCatPreset class.
 ##############################################################################
-class WidgetConfigPreset(object):
+class WidgetCatPreset(object):
     """
-    WidgetConfigPreset class for use with the pyRigPreset application.
-    Provides a UI widget to display and select a transceiver configuration
-    preset consisting of a series of CAT commands.
+    WidgetCatPreset class for use with the pyRigPreset application.
+    Provides a UI widget to display and select a transceiver CAT interface
+    configuration.
     """
     # ------------------------------------------------------------------------
-    def __init__(self, parent, id):
+    def __init__(self, parent):
         """
         Class constructor.
         
@@ -92,18 +94,19 @@ class WidgetConfigPreset(object):
         None.
         """
         self.parent = parent
-        self.frame = tk.Frame(parent)
-        self.id = 0  # Memory preset ID
+        self.frame = tk.Frame(parent,
+            highlightbackground='black',
+            highlightthickness=1,
+            padx=3,
+            pady=3,)
         
-        self.name_text = tk.StringVar(self.frame)
-
-        try:
-            self.id = int(id)
-        except Exception:
-            print('WidgetConfigPreset: Invalid memory preset ID: {}'.format(id))
-            self.id = 0
-            
-        self.config = ConfigPresetStore(self.id)
+        # Radio button labels.
+        self.labels = []
+        for idx in range(globals.NUM_CAT_PRESETS):
+            self.labels.append(tk.StringVar(self.frame))
+        
+        # Radio button selection value.
+        self.value = tk.IntVar(self.frame)
 
         self.PADX = 3
         self.PADY = 1
@@ -115,58 +118,84 @@ class WidgetConfigPreset(object):
         """
         Internal method to create and initialize the UI widget.
         """
-        btn = tk.Button(self.frame,
-            width=10,
-            textvariable=self.name_text,
-            command=self._on_left_click,
-            font=tkFont.Font(size=10))
-        btn.bind('<Button-3>', self._on_right_click)
-        btn.grid(
-            row=0,
-            column=0,
-            padx=self.PADX,
-            pady=(0, self.PADY))
-        # Update the button text.
-        self._set_name()
-
+        globals.config.read(create=False)
+        for idx in range(globals.NUM_CAT_PRESETS):
+            pnum = idx + 1  # Preset number in configuration file
+            self._set_label(pnum)
+            btn = tk.Radiobutton(self.frame,
+                textvariable=self.labels[idx],
+                variable=self.value,
+                value=pnum,
+                command=self._on_left_click)
+            btn.bind('<Button-3>', lambda event, a=pnum: self._on_right_click(a))
+            btn.grid(
+                row=0,
+                column=idx,
+                padx=self.PADX,
+                pady=(self.PADY))
+        
+        pnum = 0
+        preset = str(globals.config.get('CAT', 'PRESET'))
+        if (len(preset) > 0): pnum = int(preset)
+        self.value.set(pnum)
+    
     # ------------------------------------------------------------------------
-    def _set_name(self):
+    def _set_label(self, pnum):
         """
-        Set the button text with the preset name.
+        Set the radio button label from the config file.
         """
-        cfg_name = self.config.get_preset_name()
-        if (len(cfg_name) == 0):
-            cfg_name = 'C{}'.format(self.id)
-            self.config.set_preset_name(cfg_name)
-        self.name_text.set(cfg_name)
+        idx = pnum - 1
+        # Get preset name from config file.
+        section = 'CAT_PRESET{:03d}'.format(pnum)  # CAT interface preset section in config file
+        name = str(globals.config.get(section, 'NAME'))
+        if (len(name) > 0):
+            self.labels[idx].set(name)
+        else:
+            self.labels[idx].set('Rig {}'.format(pnum))
         
     # ------------------------------------------------------------------------
     def _on_left_click(self):
         """
-        Preset widget left click handler.
-        Send commands to the transceiver.
+        CAT preset widget left click handler.
+        Selects the CAT interface.
         """
-        #print('Configuration preset {} left button clicked.'.format(self.id))
-        if init_rig_cat():
-            for idx in range(globals.NUM_CONFIG_COMMANDS):
-                cmd = self.config.get_config_cmd(idx).strip()
-                if (len(cmd) > 0):
-                    resp = send_rig_cat_cmd(cmd)
-        close_rig_cat()
+        pnum = self.value.get()
+        #print('Left click, value = {}'.format(pnum))
+        
+        # Read the preset values.
+        section = 'CAT_PRESET{:03d}'.format(pnum)
+        if not globals.config.has_section(section):
+            globals.config.add_section(section)
+        rig = str(globals.config.get(section, 'RIG'))
+        port = str(globals.config.get(section, 'PORT'))
+        baud = str(globals.config.get(section, 'BAUD'))
+        data = str(globals.config.get(section, 'DATA'))
+        parity = str(globals.config.get(section, 'PARITY'))
+        stop = str(globals.config.get(section, 'STOP'))
+        
+        # Write them to the current CAT selection.
+        section = 'CAT'
+        if not globals.config.has_section(section):
+            globals.config.add_section(section)
+        globals.config.set(section, 'PRESET', pnum)
+        globals.config.set(section, 'RIG', rig)
+        globals.config.set(section, 'PORT', port)
+        globals.config.set(section, 'BAUD', baud)
+        globals.config.set(section, 'DATA', data)
+        globals.config.set(section, 'PARITY', parity)
+        globals.config.set(section, 'STOP', stop)
+        globals.config.write()
 
     # ------------------------------------------------------------------------
-    def _on_right_click(self, event):
+    def _on_right_click(self, pnum):
         """
-        Preset widget right click handler.
+        CAT preset widget right click handler.
+        Opens a dilog box to configure the preset.
         """
-        #print('Configuration preset {} right button clicked.'.format(self.id))
-        
-        # Open the configuration dialog window and wait for it to complete.
-        dlg = DlgConfigPreset(self.parent, self.config)
-        self.frame.wait_window(dlg.dlg_config_preset)
-        
-        # Update the button text.
-        self._set_name()
+        #print('Right click, pnum = {}'.format(pnum))
+        dlg = DlgConfigCat(self.parent, pnum)
+        self.frame.wait_window(dlg.dlg_config_cat)
+        self._set_label(pnum)
 
 
 ##############################################################################
@@ -175,16 +204,10 @@ class WidgetConfigPreset(object):
 if __name__ == "__main__":
     globals.init()
     root = tk.Tk()
-    root.title('WidgetConfigPreset test application')
-    wmb1 = WidgetConfigPreset(root, id=1)
-    wmb1.frame.grid(
+    root.title('WidgetCatPreset test application')
+    wcp = WidgetCatPreset(root)
+    wcp.frame.grid(
         row=0,
-        column=0,
-        padx=6,
-        pady=6)
-    wmb2 = WidgetConfigPreset(root, id=2)
-    wmb2.frame.grid(
-        row=1,
         column=0,
         padx=6,
         pady=6)

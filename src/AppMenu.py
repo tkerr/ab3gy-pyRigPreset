@@ -50,8 +50,8 @@ from tkinter.messagebox import showinfo, showwarning, askyesnocancel
 
 # Local packages.
 import globals
-from pyRigPresetUtils import app_close, set_geometry
-from DlgConfigCat import DlgConfigCat
+from src.pyRigPresetUtils import app_close, set_geometry
+from src.DlgConfigCat import DlgConfigCat
 
 
 ##############################################################################

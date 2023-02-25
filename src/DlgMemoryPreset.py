@@ -52,9 +52,9 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import *
+from src.pyRigPresetUtils import *
+from src.MemoryPresetStore import MemoryPresetStore, CTCSS_CONFIG
 from PyRigCat.PyRigCat import OperatingMode
-from MemoryPresetStore import MemoryPresetStore, CTCSS_CONFIG
 
 ##############################################################################
 # Globals.

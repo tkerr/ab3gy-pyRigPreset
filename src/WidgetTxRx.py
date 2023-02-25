@@ -1,9 +1,9 @@
 ###############################################################################
-# WidgetFrequencyEntry.py
+# WidgetTxRx.py
 # Author: Tom Kerr AB3GY
 #
-# WidgetFrequencyEntry class for use with the pyRigPreset application.
-# Provides a UI widget to enter the VFO frequency.
+# WidgetTxRx class for use with the pyRigPreset application.
+# Provides a UI widget to turn PTT on and off.
 #
 # Designed for personal use by the author, but available to anyone under the
 # license terms below.
@@ -50,7 +50,7 @@ from tkinter import ttk
 
 # Local packages.
 import globals
-from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
+from src.RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
 
 ##############################################################################
@@ -64,12 +64,12 @@ from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
     
 ##############################################################################
-# WidgetFrequencyEntry class.
+# WidgetTxRx class.
 ##############################################################################
-class WidgetFrequencyEntry(object):
+class WidgetTxRx(object):
     """
-    WidgetFrequencyEntry class for use with the pyRigPreset application.
-    Provides a UI widget to enter the VFO frequency.
+    WidgetTxRx class for use with the pyRigPreset application.
+    Provides a UI widget to turn PTT on and off.
     """
     # ------------------------------------------------------------------------
     def __init__(self, parent):
@@ -85,17 +85,14 @@ class WidgetFrequencyEntry(object):
         -------
         None.
         """
+        self.PADX = 3
+        self.PADY = 3
         self.parent = parent
         self.frame = tk.Frame(parent,
             highlightbackground='black',
             highlightthickness=1,
-            padx=3,
-            pady=3,)
-        self.freq_mhz_text = tk.StringVar(self.frame)
-
-        self.PADX = 3
-        self.PADY = 3
-        
+            padx=self.PADX,
+            pady=self.PADY,)
         self._widget_init()
         
     # ------------------------------------------------------------------------
@@ -103,80 +100,60 @@ class WidgetFrequencyEntry(object):
         """
         Internal method to create and initialize the UI widget.
         """
-        validateFloatCommand = self.frame.register(self._validate_float)
-        lbl = tk.Label(self.frame, 
-            text='VFO-A frequency (MHz):',
-            font=tkFont.Font(size=10))
-        lbl.grid(
+        tx_btn = tk.Button(self.frame,
+            width=6,
+            text='TX',
+            fg='red',
+            command=self._ptt_on,
+            font=tkFont.Font(size=10, weight=tkFont.BOLD))
+        tx_btn.grid(
             row=0, 
             column=0,
-            sticky='E',
-            padx=self.PADX,
-            pady=self.PADY)
-        tb = tk.Entry(self.frame,
-            width=12,
-            textvariable=self.freq_mhz_text,
-            validate='key', 
-            validatecommand=(validateFloatCommand, '%d', '%i', '%S', '%P'),
-            font=tkFont.Font(size=10))
-        tb.grid(
-            row=0, 
-            column=1,
             sticky='W',
             padx=self.PADX,
             pady=self.PADY)
-        tb.bind('<Return>', self._set_frequency)
+        rx_btn = tk.Button(self.frame,
+            width=6,
+            text='RX',
+            fg='green',
+            command=self._ptt_off,
+            font=tkFont.Font(size=10, weight=tkFont.BOLD))
+        rx_btn.grid(
+            row=0, 
+            column=1,
+            sticky='E',
+            padx=self.PADX,
+            pady=self.PADY)
 
     # ------------------------------------------------------------------------
-    def _set_frequency(self, event):
+    def _ptt_on(self):
         """
-        Event handler used to set the transceiver VFO-A frequency.
+        Event handler used to turn PTT on.
         """
-        #print(event)
-        freq_str = self.freq_mhz_text.get().strip()
-        if (len(freq_str) > 0):
-            freq_hz = int(float(freq_str) * 1E6)
-            if init_rig_cat():
-                cmd = 'FREQA {}'.format(freq_hz)
-                resp = send_rig_cat_cmd(cmd)
-            close_rig_cat()
-
+        self._send_cmd('PTT ON')
+        
     # ------------------------------------------------------------------------
-    def _validate_float(self, why, where, what, all):
+    def _ptt_off(self):
         """
-        Validate a floating point number entry.
-
-        Parameters
-        ----------
-            why : int
-                Action code: 0 for an attempted deletion, 1 for an attempted 
-                insertion, or -1 for everything else.
-            where : int
-                Index of the beginning of the insertion or deletion.
-            what : str
-                The text being inserted or deleted.
-            all : str
-                The value that the text will have if the change is allowed. 
-        Returns
-        -------
-            status : bool
-                True if the character string is allowable, False otherwise.
-                The text entry box will accept the character if True, or reject it if False.
+        Event handler used to turn PTT off.
         """
-        #print(str(why), str(where), str(what), str(all))
-        idx = int(where)
-        if (why != '1'): return True         # 1 = insertion
-        if (len(all) > 10): return False     # Limit entry length
-        if what.isnumeric(): return True
-        if (what == '.'):
-            if '.' in all[:idx]: return False # Only one occurrence allowed
-            else: return True
-        return False  # Nothing else allowed
-
+        self._send_cmd('PTT OFF')
+    
+    # ------------------------------------------------------------------------
+    def _send_cmd(self, cmd):
+        """
+        Send a command to the transceiver.
+        """
+        if init_rig_cat(read_timeout=0.1):
+            print(cmd)
+            resp = send_rig_cat_cmd(cmd)
+            if 'ERROR' in resp:
+                print('Command: "{}" Response: "{}"'.format(cmd, resp))
+        close_rig_cat()
 
 ##############################################################################
 # Main program.
 ############################################################################## 
 if __name__ == "__main__":
-    print('WidgetFrequencyEntry test application not implemented.')
+    print('WidgetTxRx test application not implemented.')
    

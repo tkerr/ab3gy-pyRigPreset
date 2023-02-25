@@ -44,7 +44,7 @@
 # Tkinter packages.
 
 # Local packages.
-from ConfigFile import ConfigFile
+from src.ConfigFile import ConfigFile
 from PyRigCat.PyRigCat import PyRigCat
 
 

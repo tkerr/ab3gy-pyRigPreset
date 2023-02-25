@@ -51,9 +51,9 @@ from tkinter import ttk
 
 # Local packages.
 import globals
-from DlgMemoryPreset import DlgMemoryPreset
-from MemoryPresetStore import MemoryPresetStore
-from RigCat import init_rig_cat, send_rig_cat_cmd, setup_split, close_rig_cat
+from src.DlgMemoryPreset import DlgMemoryPreset
+from src.MemoryPresetStore import MemoryPresetStore
+from src.RigCat import init_rig_cat, send_rig_cat_cmd, setup_split, close_rig_cat
 
 
 ##############################################################################

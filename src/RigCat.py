@@ -46,7 +46,7 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import *
+from src.pyRigPresetUtils import *
 
 # All the PyRigCat classes.
 from PyRigCat.PyRigCat import *

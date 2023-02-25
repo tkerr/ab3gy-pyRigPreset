@@ -1,9 +1,9 @@
 ###############################################################################
-# WidgetTxRx.py
+# WidgetCommandEntry.py
 # Author: Tom Kerr AB3GY
 #
-# WidgetTxRx class for use with the pyRigPreset application.
-# Provides a UI widget to turn PTT on and off.
+# WidgetCommandEntry class for use with the pyRigPreset application.
+# Provides a UI widget to enter a transceiver command.
 #
 # Designed for personal use by the author, but available to anyone under the
 # license terms below.
@@ -50,7 +50,7 @@ from tkinter import ttk
 
 # Local packages.
 import globals
-from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
+from src.RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
 
 ##############################################################################
@@ -64,12 +64,12 @@ from RigCat import init_rig_cat, send_rig_cat_cmd, close_rig_cat
 
     
 ##############################################################################
-# WidgetTxRx class.
+# WidgetCommandEntry class.
 ##############################################################################
-class WidgetTxRx(object):
+class WidgetCommandEntry(object):
     """
-    WidgetTxRx class for use with the pyRigPreset application.
-    Provides a UI widget to turn PTT on and off.
+    WidgetCommandEntry class for use with the pyRigPreset application.
+    Provides a UI widget to enter a transceiver command.
     """
     # ------------------------------------------------------------------------
     def __init__(self, parent):
@@ -85,14 +85,18 @@ class WidgetTxRx(object):
         -------
         None.
         """
-        self.PADX = 3
-        self.PADY = 3
         self.parent = parent
         self.frame = tk.Frame(parent,
             highlightbackground='black',
             highlightthickness=1,
-            padx=self.PADX,
-            pady=self.PADY,)
+            padx=3,
+            pady=3,)
+        self.tb_cmd = None # The command text box
+        self.command_text = tk.StringVar(self.frame)
+
+        self.PADX = 3
+        self.PADY = 3
+        
         self._widget_init()
         
     # ------------------------------------------------------------------------
@@ -100,60 +104,44 @@ class WidgetTxRx(object):
         """
         Internal method to create and initialize the UI widget.
         """
-        tx_btn = tk.Button(self.frame,
-            width=6,
-            text='TX',
-            fg='red',
-            command=self._ptt_on,
-            font=tkFont.Font(size=10, weight=tkFont.BOLD))
-        tx_btn.grid(
+        lbl = tk.Label(self.frame, 
+            text='Command:',
+            font=tkFont.Font(size=10))
+        lbl.grid(
             row=0, 
             column=0,
-            sticky='W',
-            padx=self.PADX,
-            pady=self.PADY)
-        rx_btn = tk.Button(self.frame,
-            width=6,
-            text='RX',
-            fg='green',
-            command=self._ptt_off,
-            font=tkFont.Font(size=10, weight=tkFont.BOLD))
-        rx_btn.grid(
-            row=0, 
-            column=1,
             sticky='E',
             padx=self.PADX,
             pady=self.PADY)
+        self.tb_cmd = tk.Entry(self.frame,
+            width=20,
+            textvariable=self.command_text,
+            validate='key', 
+            font=tkFont.Font(size=10))
+        self.tb_cmd.grid(
+            row=0, 
+            column=1,
+            sticky='W',
+            padx=self.PADX,
+            pady=self.PADY)
+        self.tb_cmd.bind('<Return>', self._send_command)
 
     # ------------------------------------------------------------------------
-    def _ptt_on(self):
+    def _send_command(self, event):
         """
-        Event handler used to turn PTT on.
+        Event handler used to set the transceiver VFO-A frequency.
         """
-        self._send_cmd('PTT ON')
-        
-    # ------------------------------------------------------------------------
-    def _ptt_off(self):
-        """
-        Event handler used to turn PTT off.
-        """
-        self._send_cmd('PTT OFF')
-    
-    # ------------------------------------------------------------------------
-    def _send_cmd(self, cmd):
-        """
-        Send a command to the transceiver.
-        """
-        if init_rig_cat(read_timeout=0.1):
-            print(cmd)
+        #print(event)
+        cmd = self.command_text.get().strip()
+        if init_rig_cat():
             resp = send_rig_cat_cmd(cmd)
-            if 'ERROR' in resp:
-                print('Command: "{}" Response: "{}"'.format(cmd, resp))
         close_rig_cat()
+        self.tb_cmd.delete(0, tk.END)
+
 
 ##############################################################################
 # Main program.
 ############################################################################## 
 if __name__ == "__main__":
-    print('WidgetTxRx test application not implemented.')
+    print('WidgetCommandEntry test application not implemented.')
    

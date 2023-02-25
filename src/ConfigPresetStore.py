@@ -1,10 +1,10 @@
 ###############################################################################
-# CatPresetStore.py
+# ConfigPresetStore.py
 # Author: Tom Kerr AB3GY
 #
-# CatPresetStore class for use with the pyRigPreset application.
+# ConfigPresetStore class for use with the pyRigPreset application.
 # Provides a data container and configuration file read/write methods for
-# a saved transceiver CAT interface configuration.
+# a saved transceiver configuration consisting of a series of CAT commands.
 #
 # Designed for personal use by the author, but available to anyone under the
 # license terms below.
@@ -48,8 +48,8 @@ import _env_init
 
 # Local packages.
 import globals
-from pyRigPresetUtils import *
-from ConfigFile import ConfigFile
+from src.pyRigPresetUtils import *
+from src.ConfigFile import ConfigFile
 
 
 ##############################################################################
@@ -63,13 +63,13 @@ from ConfigFile import ConfigFile
 
     
 ##############################################################################
-# CatPresetStore class.
+# ConfigPresetStore class.
 ##############################################################################
-class CatPresetStore(object):
+class ConfigPresetStore(object):
     """
-    CatPresetStore class for use with the pyRigPreset application.
+    ConfigPresetStore class for use with the pyRigPreset application.
     Provides a data container and configuration file read/write methods for
-    a saved transceiver CAT interface configuration.
+    a saved transceiver configuration consisting of a series of CAT commands.
     """
     # ------------------------------------------------------------------------
     def __init__(self, id):
@@ -89,16 +89,11 @@ class CatPresetStore(object):
         try:
             self._id = int(id)
         except Exception:
-            print('CatPresetStore: Invalid configuration preset ID: {}'.format(id))
+            print('ConfigPresetStore: Invalid configuration preset ID: {}'.format(id))
             self._id = 0
         
-        self._preset_name = ''  # Preset name on button
-        self._rig = ''          # Transceiver name
-        self._port = ''         # COM port name
-        self._baud = ''         # Baud rate
-        self._data = ''         # Data bits size
-        self._parity = ''       # COM port parity
-        self._stop = ''         # Stop bits size
+        self._preset_name = ''  # Preset description
+        self._cmd = [''] * globals.NUM_CONFIG_COMMANDS  # List of configuration commands
 
         self.init()
 
@@ -119,85 +114,38 @@ class CatPresetStore(object):
         self._preset_name = str(val)
 
     # ------------------------------------------------------------------------
-    def get_rig(self):
-       return self._rig
-       
-    # ------------------------------------------------------------------------
-    def set_rig(self, val):
-        self._rig = str(val)
-    
-    # ------------------------------------------------------------------------
-    def get_port(self):
-       return self._port
-       
-    # ------------------------------------------------------------------------
-    def set_port(self, val):
-        self._port = str(val)
-    
-    # ------------------------------------------------------------------------
-    def get_baud(self):
-       return self._baud
-       
-    # ------------------------------------------------------------------------
-    def set_baud(self, val):
-        self._baud = str(val)
-    
-    # ------------------------------------------------------------------------
-    def get_data(self):
-       return self._data
-       
-    # ------------------------------------------------------------------------
-    def set_data(self, val):
-        self._data = str(val)
+    def get_config_cmd(self, idx):
+        cmd = ''
+        if (idx >= 0) and (idx < globals.NUM_CONFIG_COMMANDS):
+            cmd = self._cmd[idx]
+        return cmd
 
     # ------------------------------------------------------------------------
-    def get_parity(self):
-       return self._parity
-       
-    # ------------------------------------------------------------------------
-    def set_parity(self, val):
-        self._parity = str(val)
-    
-    # ------------------------------------------------------------------------
-    def get_stop(self):
-       return self._stop
-       
-    # ------------------------------------------------------------------------
-    def set_stop(self, val):
-        self._stop = str(val)
+    def set_config_cmd(self, idx, cmd):
+        if (idx >= 0) and (idx < globals.NUM_CONFIG_COMMANDS):
+            self._cmd[idx] = str(cmd).strip()
  
     # ------------------------------------------------------------------------
     def init(self):
         globals.config.read(create=False)
         if (self._id > 0):
-            section = 'CAT_PRESET{:03d}'.format(self._id)
+            section = 'CONFIG_PRESET{:03d}'.format(self._id)
             if not globals.config.has_section(section):
                 globals.config.add_section(section)
             
             self._preset_name = str(globals.config.get(section, 'PRESET_NAME'))
-            self._rig = str(globals.config.get(section, 'RIG'))
-            self._port = str(globals.config.get(section, 'PORT'))
-            self._baud = str(globals.config.get(section, 'BAUD'))
-            self._data = str(globals.config.get(section, 'DATA'))
-            self._parity = str(globals.config.get(section, 'PARITY'))
-            self._stop = str(globals.config.get(section, 'STOP'))
-            
+            for idx in range(globals.NUM_CONFIG_COMMANDS):
+                self._cmd[idx] = str(globals.config.get(section, 'CMD{:03d}'.format(idx+1)))
     
     # ------------------------------------------------------------------------
     def write_config(self):
         if (self._id > 0):
-            section = 'CAT_PRESET{:03d}'.format(self._id)
+            section = 'CONFIG_PRESET{:03d}'.format(self._id)
             if not globals.config.has_section(section):
                 globals.config.add_section(section)
-                
             globals.config.set(section, 'PRESET_NAME', self._preset_name)
-            globals.config.set(section, 'RIG', self._rig)
-            globals.config.set(section, 'PORT', self._port)
-            globals.config.set(section, 'BAUD', self._baud)
-            globals.config.set(section, 'DATA', self._data)
-            globals.config.set(section, 'PARITY', self._parity)
-            globals.config.set(section, 'STOP', self._stop)
-            
+            for idx in range(globals.NUM_CONFIG_COMMANDS):
+                globals.config.set(section, 'CMD{:03d}'.format(idx+1), self._cmd[idx])
             globals.config.write()
 
 
@@ -205,9 +153,9 @@ class CatPresetStore(object):
 # Main program.
 ############################################################################## 
 if __name__ == "__main__":
-    print('CatPresetStore test program.')
+    print('ConfigPresetStore test program.')
     globals.init()
-    p1 = CatPresetStore(1)
+    p1 = ConfigPresetStore(1)
     p1.set_preset_name('Preset One')
     p1.set_config_cmd(0, 'MODE USB')
     p1.set_config_cmd(1, 'MONITOR OFF')
