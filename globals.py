@@ -45,7 +45,7 @@
 
 # Local packages.
 from src.ConfigFile import ConfigFile
-from PyRigCat.PyRigCat import PyRigCat
+from PyRigCat.PyRigCat import PyRigCat, RigName
 
 
 ##############################################################################
@@ -63,6 +63,13 @@ root = None           # The root window
 config = None         # The config file object
 rig_cat = PyRigCat()  # The rig CAT control object
 
+# The list of supported transceivers.
+rig_list = (
+    RigName.NONE,
+    RigName.FT817,
+    RigName.FT991,
+    RigName.IC7000,
+    )
 
 ##############################################################################
 # Functions.

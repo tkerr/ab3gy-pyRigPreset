@@ -57,14 +57,6 @@ from src.pyRigPresetUtils import set_geometry
 # Globals.
 ##############################################################################
 
-# The list of supported transceivers.
-rig_list = (
-    'NONE',
-    'FT-817',
-    'FT-991',
-    'IC-7000',
-    )
-
 # The list of selectable baud rates.
 baud_list = (
     '1200',
@@ -222,7 +214,7 @@ class DlgConfigCat(object):
         mnu_rig = tk.OptionMenu(
             self.dlg_config_cat,
             self.rig_text,
-            *rig_list)
+            *globals.rig_list)
         mnu_rig.config(width=10)
         mnu_rig.grid(row=row, column=1, padx=6, pady=3, sticky='W')
         row += 1
