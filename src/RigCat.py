@@ -79,14 +79,14 @@ def init_rig_cat(read_timeout=0.5):
     stop = str(globals.config.get(section, 'STOP'))
     
     # Select the specified rig CAT object.
-    if (rig == 'FT-817'):
-        if (globals.rig_cat.NAME != 'FT-817'):
+    if (rig == RigName.FT817):
+        if (globals.rig_cat.NAME != RigName.FT817):
             globals.rig_cat = PyRigCat_ft817()
-    elif (rig == 'FT-991'):
-        if (globals.rig_cat.NAME != 'FT-991'):
+    elif (rig == RigName.FT991):
+        if (globals.rig_cat.NAME != RigName.FT991):
             globals.rig_cat = PyRigCat_ft991()
-    elif (rig == 'IC-7000'):
-        if (globals.rig_cat.NAME != 'IC-7000'):
+    elif (rig == RigName.IC7000):
+        if (globals.rig_cat.NAME != RigName.IC7000):
             globals.rig_cat = PyRigCat_ic7000()
     else:
         print ('Rig: ' + rig + ' not supported.')

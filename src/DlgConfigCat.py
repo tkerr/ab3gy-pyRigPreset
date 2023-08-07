@@ -156,7 +156,6 @@ class DlgConfigCat(object):
         """
         Internal method to create and initialize the dialog box.
         """
-        global rig_list
         global baud_list
         global data_list
         global parity_list
@@ -177,7 +176,7 @@ class DlgConfigCat(object):
         
         rig = str(globals.config.get(self.section, 'RIG'))
         if (len(rig) > 0): self.rig_text.set(rig)
-        else: self.rig_text.set(rig_list[0])
+        else: self.rig_text.set(globals.RIG_LIST[0])
         
         port = str(globals.config.get(self.section, 'PORT'))
         if (len(port) > 0): self.port_text.set(port)
@@ -214,7 +213,7 @@ class DlgConfigCat(object):
         mnu_rig = tk.OptionMenu(
             self.dlg_config_cat,
             self.rig_text,
-            *globals.rig_list)
+            *globals.RIG_LIST)
         mnu_rig.config(width=10)
         mnu_rig.grid(row=row, column=1, padx=6, pady=3, sticky='W')
         row += 1

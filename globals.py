@@ -64,12 +64,7 @@ config = None         # The config file object
 rig_cat = PyRigCat()  # The rig CAT control object
 
 # The list of supported transceivers.
-rig_list = (
-    RigName.NONE,
-    RigName.FT817,
-    RigName.FT991,
-    RigName.IC7000,
-    )
+RIG_LIST = RigName.RIG_LIST[1:]  # Assumes index 0 == NONE
 
 ##############################################################################
 # Functions.
